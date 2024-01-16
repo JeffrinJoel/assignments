@@ -43,7 +43,66 @@
   const bodyParser = require('body-parser');
   
   const app = express();
-  
+  const port = 3000;
   app.use(bodyParser.json());
+  let idGen = 1;
+  let todos = []
+
+  app.get("/todos",(req,res) => {
+    return res.status(200).json(todos)
+  })
+
+  app.get("/todos/:id", (req,res) => {
+    const todoId = parseInt(req.params.id);
+    const todo = todos.find((element) => element.id === todoId);
+    if(todo){
+      return res.status(200).json(todo)
+    }else{
+      return res.status(404).json({
+        'message' : 'invalid id'
+      });
+    }
+  })
+
+  app.post("/todos", (req,res) => {
+    // try{
+      const todo = req.body;
+      todos.push({...todo,id:idGen})
+      return res.status(201).json({"id" : idGen++})
+    // }catch(err){
+    //   return res.status(404).json({ 
+    //     'message' : err.message 
+    //   })
+    // }
+  })
+
+  app.put("/todos/:id", (req,res) => {
+    const todoId = parseInt(req.params.id);
+    const todoIndex = todos.findIndex((element) => element.id === todoId);
+    if(todoIndex === -1){
+      return res.status(404).json({
+        'message' : 'invalid'
+      });
+    }else {
+      todos[todoIndex].title = req.body.title;
+      todos[todoIndex].description = req.body.description;
+      return res.json(todos[todoIndex]);
+    }
+  })
+
+  app.delete("/todos/:id", (req,res) => {
+    const todoId = parseInt(req.params.id)
+    const todoIndex = todos.findIndex((element) => element.id === todoId);
+    if(todoIndex === -1){
+      return res.status(404).json({
+        'message' : 'invalid'
+      })
+    }else {
+      todos.splice(todoIndex, 1)
+      return res.json({
+        'status' : 'updated'
+      })
+    }
+  })
   
   module.exports = app;
